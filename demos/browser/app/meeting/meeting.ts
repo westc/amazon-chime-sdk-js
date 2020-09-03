@@ -181,17 +181,7 @@ export class DemoMeetingApp implements AudioVideoObserver, DeviceChangeObserver 
         (document.getElementById('info-meeting') as HTMLSpanElement).innerText = this.meeting;
         (document.getElementById('info-name') as HTMLSpanElement).innerText = this.name;
         this.switchToFlow('flow-devices');
-        /*
-        await this.openAudioInputFromSelection();
-        try {
-          await this.openVideoInputFromSelection(
-            (document.getElementById('video-input') as HTMLSelectElement).value,
-            true
-          );
-        } catch (err) {
-          this.log('no video input device selected');
-        }
-        */
+        
         await this.openAudioOutputFromSelection();
         this.hideProgress('progress-authenticate');
 
