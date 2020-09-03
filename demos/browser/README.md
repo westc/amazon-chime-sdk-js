@@ -27,6 +27,7 @@ Browser demo applications are located in the `app` folder. Current demos are:
 
 * `meeting` - incorporates all functionality into a videoconferencing application with a Bootstrap user interface
 * `meetingV2` (default) - A similar demo app to `meeting` with content share functionality 
+* `meetingReadinessChecker` - Meetings readiness checker app help developers ensure that end-users can join Amazon Chime SDK meetings from their devices
 
 To run a specific demo application use:
 
@@ -34,11 +35,18 @@ To run a specific demo application use:
 npm run start --app=<app>
 ```
 
-For example, to run the `meeting` demo, run:
+For example, 
+1. To run the `meeting` demo, run:
 
-```
-npm run start --app=meeting
-```
+    ```
+    npm run start --app=meeting
+    ```
+2. To run the `meetingReadinessChecker` demo, run:
+
+    ```
+   npm run start --app=meetingReadinessChecker
+   ```
+
 
 If you don't specify the `--app` option, it will run the `meetingV2` demo
 

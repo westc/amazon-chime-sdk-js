@@ -840,4 +840,73 @@ const observer = {
 meetingSession.audioVideo.addObserver(observer);
 ```
 
+### Meeting Readiness Checker
+**Use case 27.** Initializing the meeting readiness checker.
+
+```js
+const logger = new ConsoleLogger('MyLogger', LogLevel.INFO);
+const deviceController = new DefaultDeviceController(logger);
+
+// You need responses from server-side Chime API. See below for details.
+const meetingResponse = /* The response from the CreateMeeting API action */;
+const attendeeResponse = /* The response from the CreateAttendee or BatchCreateAttendee API action */;
+const configuration = new MeetingSessionConfiguration(meetingResponse, attendeeResponse);
+const meetingSession = new DefaultMeetingSession(
+  configuration,
+  logger,
+  deviceController
+);
+
+// Initializing the meeting readiness checker
+const meetingReadinessChecker = new DefaultMeetingReadinessCheckerController(logger, meetingSession);
+```
+
+**Use case 28.** Using the meeting readiness checker to perform local checks.
+
+```js
+const logger = new ConsoleLogger('MyLogger', LogLevel.INFO);
+const deviceController = new DefaultDeviceController(logger);
+
+// You can create an emptu meeting configuration to initialize the meeting session for local checks
+const configuration = new MeetingSessionConfiguration();
+const meetingSession = new DefaultMeetingSession(
+  configuration,
+  logger,
+  deviceController
+);
+
+const meetingReadinessChecker = new DefaultMeetingReadinessCheckerController(logger, meetingSession);
+
+const audioInputDevices = await deviceController.listAudioInputDevices();
+const audioCheckFeedback = await this.meetingReadinessChecker.checkAudioInput(audio_input);
+```
+
+**Use case 29.** Using the meeting readiness checker to perform end to end checks. e.g audio, video & content share end to end checks.
+
+```js
+// Initializing the meeting readiness checker
+const meetingReadinessChecker = new DefaultMeetingReadinessCheckerController(logger, meetingSession);
+
+// Audio connectivity check
+const audioInputDevices = await meetingSession.audioVideo.listAudioInputDevices();
+const audioInputDeviceInfo = /* An array item from meetingSession.audioVideo.listAudioInputDevices */;
+const audioConnectivityCheckFeedback = await this.meetingReadinessChecker.checkAudioConnectivity(audioInputDeviceInfo);
+
+// Content share connectivity check
+const contentShareConnectivityCheckFeedback = await this.meetingReadinessChecker.checkContentShareConnectivity();
+```
+
+**Use case 30.** Using the meeting readiness checker to perform network related checks. e.g TCP & UDP checks.
+
+```js
+// Initializing the meeting readiness checker
+const meetingReadinessChecker = new DefaultMeetingReadinessCheckerController(logger, meetingSession);
+
+// Network UDP check
+const networkUDPCheckFeedback = await meetingReadinessChecker.checkNetworkUDPConnectivity();
+
+// Network TCP check
+const networkUDPCheckFeedback = await meetingReadinessChecker.checkNetworkTCPConnectivity();
+```
+
 Copyright 2019-2020 Amazon.com, Inc. or its affiliates. All Rights Reserved.
