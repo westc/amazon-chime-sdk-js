@@ -44,7 +44,14 @@ http.createServer({}, async (request, response) => {
       }
 
       // Look up the meeting by its title. If it does not exist, create the meeting.
-      if (!meetingTable[requestUrl.query.title]) {
+      try {
+        if (!meetingTable[requestUrl.query.title]) {
+          meetingTable[requestUrl.query.title] = await chime.getMeeting({
+            MeetingId: requestUrl.query.title
+          }).promise();
+        }
+      }
+      catch (e) {
         meetingTable[requestUrl.query.title] = await chime.createMeeting({
           // Use a UUID for the client request token to ensure that any request retries
           // do not create multiple meetings.

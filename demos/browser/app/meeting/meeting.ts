@@ -147,6 +147,70 @@ export class DemoMeetingApp implements AudioVideoObserver, DeviceChangeObserver 
     this.initParameters();
     this.setMediaRegion();
     this.setUpVideoTileElementResizer();
+    this.autoAuth();
+  }
+
+  autoAuth() {
+    let paramsData = (new URL(document.location.href)).searchParams.get('data');
+    if (!paramsData) {
+      return;
+    }
+
+    let data: any = JSON.parse(paramsData);
+    this.meeting = (document.getElementById('inputMeeting') as HTMLInputElement).value = data.Meeting.MeetingId;
+    this.name = (document.getElementById('inputName') as HTMLInputElement).value = 'HTML Page';
+    this.region = (document.getElementById('inputRegion') as HTMLInputElement).value = data.Meeting.MediaRegion;
+
+    new AsyncScheduler().start(
+      async (): Promise<void> => {
+        this.showProgress('progress-authenticate');
+        let chimeMeetingId: string = '';
+        try {
+          chimeMeetingId = await this.authenticate({
+            Meeting: { Meeting: data.Meeting },
+            Attendee: { Attendee: data.Attendee }
+          });
+        } catch (error) {
+          (document.getElementById('failed-meeting') as HTMLDivElement).innerText = `Meeting ID: ${this.meeting}`;
+          (document.getElementById('failed-meeting-error') as HTMLDivElement).innerText = error.message;
+          this.switchToFlow('flow-failed-meeting');
+          return;
+        }
+        (document.getElementById('meeting-id') as HTMLSpanElement).innerText = `${this.meeting} (${this.region})`;
+        (document.getElementById('chime-meeting-id') as HTMLSpanElement).innerText = `${chimeMeetingId}`;
+        (document.getElementById('info-meeting') as HTMLSpanElement).innerText = this.meeting;
+        (document.getElementById('info-name') as HTMLSpanElement).innerText = this.name;
+        this.switchToFlow('flow-devices');
+        /*
+        await this.openAudioInputFromSelection();
+        try {
+          await this.openVideoInputFromSelection(
+            (document.getElementById('video-input') as HTMLSelectElement).value,
+            true
+          );
+        } catch (err) {
+          this.log('no video input device selected');
+        }
+        */
+        await this.openAudioOutputFromSelection();
+        this.hideProgress('progress-authenticate');
+
+        try {
+          this.showProgress('progress-join');
+          await this.join();
+          this.audioVideo.stopVideoPreviewForVideoInput(document.getElementById(
+            'video-preview'
+          ) as HTMLVideoElement);
+          this.audioVideo.chooseVideoInputDevice(null);
+          this.hideProgress('progress-join');
+          this.displayButtonStates();
+          this.switchToFlow('flow-meeting');
+        } catch (error) {
+          document.getElementById('failed-join').innerText = `Meeting ID: ${this.meeting}`;
+          document.getElementById('failed-join-error').innerText = `Error: ${error.message}`;
+        }
+      }
+    );
   }
 
   initParameters(): void {
@@ -165,6 +229,8 @@ export class DemoMeetingApp implements AudioVideoObserver, DeviceChangeObserver 
     });
 
     document.getElementById('form-authenticate').addEventListener('submit', e => {
+      // const params = (new URL(document.location.href)).searchParams;
+      // return alert(params.get('data'));
       e.preventDefault();
       this.meeting = (document.getElementById('inputMeeting') as HTMLInputElement).value;
       this.name = (document.getElementById('inputName') as HTMLInputElement).value;
@@ -1148,8 +1214,8 @@ export class DemoMeetingApp implements AudioVideoObserver, DeviceChangeObserver 
     return value;
   }
 
-  async authenticate(): Promise<string> {
-    let joinInfo = (await this.joinMeeting()).JoinInfo;
+  async authenticate(inJoinInfo?: Object): Promise<string> {
+    let joinInfo = inJoinInfo || (await this.joinMeeting()).JoinInfo;
     const configuration = new MeetingSessionConfiguration(joinInfo.Meeting, joinInfo.Attendee);
     await this.initializeMeetingSession(configuration);
     const url = new URL(window.location.href);
