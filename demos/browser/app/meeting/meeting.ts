@@ -195,6 +195,9 @@ export class DemoMeetingApp implements AudioVideoObserver, DeviceChangeObserver 
           this.hideProgress('progress-join');
           this.displayButtonStates();
           this.switchToFlow('flow-meeting');
+          // Start with the microphone off instead of the default where it is on
+          // when the page loads.
+          document.getElementById('button-microphone').dispatchEvent(new Event('mousedown'));
         } catch (error) {
           document.getElementById('failed-join').innerText = `Meeting ID: ${this.meeting}`;
           document.getElementById('failed-join-error').innerText = `Error: ${error.message}`;

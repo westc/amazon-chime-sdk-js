@@ -69,7 +69,7 @@ module.exports = env => {
         },
       ],
     },
-    mode: 'development',
+    mode: 'production',
     performance: {
       hints: false,
     },
